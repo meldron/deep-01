@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 import unittest
 import sys
 
-from sklearn.metrics import mean_squared_error
-
 data_path = 'Bike-Sharing-Dataset/hour.csv'
 
 rides = pd.read_csv(data_path)
