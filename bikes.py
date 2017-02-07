@@ -106,41 +106,42 @@ def MSE(y, Y):
     return np.mean((y - Y) ** 2)
 
 
-epochs = 100
-learning_rates = [0.25, 0.2, 0.15, 0.1, 0.07]
+epochs = [100, 130, 160, 200, 250]
+learning_rates = [0.1, 0.1, 0.07, 0.05, 0.03]
 hidden_nodes = [3, 5, 7, 9]
 output_nodes = [1, 2, 3, 4]
 
 N_i = train_features.shape[1]
 mean_squared_errors = []
 
-np.random.seed(19)
 
-for lr in learning_rates:
-    for hn in hidden_nodes:
-        for on in output_nodes:
-            network = NeuralNetwork(N_i, hn, on, lr)
+for epoch in epochs:
+    for lr in learning_rates:
+        for hn in hidden_nodes:
+            for on in output_nodes:
+                network = NeuralNetwork(N_i, hn, on, lr)
 
-            losses = {'train': [], 'validation': []}
-            for e in range(epochs):
-                # Go through a random batch of 128 records from the training data set
-                batch = np.random.choice(train_features.index, size=128)
-                for record, target in zip(train_features.ix[batch].values, train_targets.ix[batch]['cnt']):
-                    network.train(record, target)
-                # Printing out the training progress
-                train_loss = MSE(network.run(train_features), train_targets['cnt'].values)
-                val_loss = MSE(network.run(val_features), val_targets['cnt'].values)
-                progress = 100 * e / float(epochs)
+                losses = {'train': [], 'validation': []}
+                for e in range(epoch):
+                    # Go through a random batch of 128 records from the training data set
+                    batch = np.random.choice(train_features.index, size=128)
+                    for record, target in zip(train_features.ix[batch].values, train_targets.ix[batch]['cnt']):
+                        network.train(record, target)
+                    # Printing out the training progress
+                    train_loss = MSE(network.run(train_features), train_targets['cnt'].values)
+                    val_loss = MSE(network.run(val_features), val_targets['cnt'].values)
+                    progress = 100 * e / float(epochs)
 
-                o = u"\rLR: {:0.2f} ... HL: {:d} ... OL: {:d} ... Progress: {:04.1f}% ... " \
-                    u"Training loss: {:0.5f} ... Validation loss: {:0.5f}"\
-                    .format(lr, hn, on, progress, train_loss, val_loss)
+                    o = u"\rLR: {:0.2f} ... HL: {:d} ... OL: {:d} ... Progress: {:04.1f}% ... " \
+                        u"Training loss: {:0.5f} ... Validation loss: {:0.5f}"\
+                        .format(lr, hn, on, progress, train_loss, val_loss)
 
-                sys.stdout.write(o)
-                losses['train'].append(train_loss)
-                losses['validation'].append(val_loss)
-            mean_squared_errors.append((lr, hn, on, train_loss, val_loss))
-        sys.stdout.write("\n")
+                    sys.stdout.write(o)
+                    losses['train'].append(train_loss)
+                    losses['validation'].append(val_loss)
+                mean_squared_errors.append((lr, hn, on, train_loss, val_loss))
+            sys.stdout.write("\n")
+
 df = pd.DataFrame(mean_squared_errors)
 df.columns = ['LearningRate', 'HiddenLayer', 'OutputLayer', "TrainLoss", "ValidationLoss"]
 df.to_csv('evaluation.csv', index=False)
